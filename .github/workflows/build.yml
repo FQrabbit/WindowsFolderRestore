@@ -38,8 +38,20 @@ jobs:
         python -m pip install --upgrade pip  # 升级 pip
         pip install pyinstaller  # 安装 PyInstaller
 
+    - name: Debug after dependencies installation
+      run: |
+        echo "Dependencies installed successfully"
+        df -h  # Check disk space usage
+        free -m  # Check memory usage
+
     - name: Compile translations
       run: python setup.py build  # 编译项目
+
+    - name: Debug after compilation
+      run: |
+        echo "Compilation completed"
+        df -h  # Check disk space usage
+        free -m  # Check memory usage
 
     - name: Get Version
       id: get_version
@@ -65,6 +77,12 @@ jobs:
     - name: Package with PyInstaller
       run: |
         pyinstaller --onefile --name WindowsFolderRestore_${{ steps.get_version.outputs.version }}  --icon=assets/icon.ico src/main.py  # 使用 PyInstaller 打包项目
+
+    - name: Debug after packaging
+      run: |
+        echo "Packaging completed"
+        df -h  # Check disk space usage
+        free -m  # Check memory usage
 
     - name: Upload Artifact
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
