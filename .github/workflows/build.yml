@@ -14,6 +14,20 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3  # 检出仓库代码
 
+    - name: Cache APT packages
+      id: cache-apt
+      uses: actions/cache@v3
+      with:
+        path: /var/cache/apt
+        key: ${{ runner.os }}-apt-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-apt-
+
+    - name: Update apt-get and install gettext
+      run: |
+        sudo apt-get update  # 更新包列表
+        sudo apt-get install -y gettext  # 安装 gettext
+
     - name: Set up Python
       uses: actions/setup-python@v4  # 设置 Python 环境
       with:
@@ -25,10 +39,7 @@ jobs:
         pip install pyinstaller  # 安装 PyInstaller
 
     - name: Compile translations
-      run: |
-        sudo apt-get update  # 更新包列表
-        sudo apt-get install -y gettext  # 安装 gettext
-        python setup.py build  # 编译项目
+      run: python setup.py build  # 编译项目
 
     - name: Get Version
       id: get_version

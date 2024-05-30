@@ -8,8 +8,6 @@ def get_version():
 
 def compile_translations():
     """编译翻译文件"""
-    subprocess.run(['sudo', 'apt-get', 'update'], check=True)
-    subprocess.run(['sudo', 'apt-get', 'install', '-y', 'gettext'], check=True)
     subprocess.run([sys.executable, 'setup.py', 'build'], check=True)
 
 def package_with_pyinstaller(version):
