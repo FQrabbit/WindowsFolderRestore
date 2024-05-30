@@ -46,7 +46,7 @@ jobs:
 
     - name: Get Version
       id: get_version
-      run: echo "::set-output name=version::$(python version.py)"  # 读取版本号并设置为输出变量
+      run: echo "VERSION=$(python version.py)" >> $GITHUB_ENV  # 读取版本号并设置为环境变量
 
     - name: Increment Version
       if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
@@ -67,7 +67,7 @@ jobs:
 
     - name: Package with PyInstaller
       run: |
-        pyinstaller --onefile --name WindowsFolderRestore_${{ steps.get_version.outputs.version }}  --icon=assets/icon.ico src/main.py  # 使用 PyInstaller 打包项目
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }} --icon=assets/icon.ico src/main.py  # 使用 PyInstaller 打包项目
 
     - name: Debug after packaging
       run: |
@@ -77,10 +77,10 @@ jobs:
 
     - name: Upload Artifact
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # 更新到 v4 版本
       with:
         name: WindowsFolderRestore_test  # 设置上传的工件名称
-        path: dist/WindowsFolderRestore_${{ steps.get_version.outputs.version }}  # 设置上传的工件路径
+        path: dist/WindowsFolderRestore_${{ env.VERSION }}  # 设置上传的工件路径
 
     - name: Create Release
       if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
@@ -101,6 +101,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}  # 使用创建发布步骤的上传 URL
-        asset_path: dist/WindowsFolderRestore_${{ steps.get_version.outputs.version }}  # 设置上传的工件路径
-        asset_name: WindowsFolderRestore_${{ steps.get_version.outputs.version }}  # 设置上传的工件名称
+        asset_path: dist/WindowsFolderRestore_${{ env.VERSION }}  # 设置上传的工件路径
+        asset_name: WindowsFolderRestore_${{ env.VERSION }}  # 设置上传的工件名称
         asset_content_type: application/octet-stream  # 设置上传的工件内容类型
