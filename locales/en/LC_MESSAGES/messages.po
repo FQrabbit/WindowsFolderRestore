@@ -1,0 +1,43 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+msgid "Reset Permissions and Owner"
+msgstr ""
+
+msgid "Folder Path:"
+msgstr ""
+
+msgid "Browse"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Log:"
+msgstr ""
+
+msgid "Please select a folder path."
+msgstr ""
+
+msgid "Error: The specified folder does not exist."
+msgstr ""
+
+msgid "Running command: {}"
+msgstr ""
+
+msgid "Permissions and owner reset completed."
+msgstr ""
+
+msgid "Error: {}"
+msgstr ""
+
+msgid "Resetting permissions and owner for folder: \"{}\""
+msgstr ""
+
+msgid "The specified folder does not exist after running icacls."
+msgstr ""
+
+msgid "Language:"
+msgstr ""

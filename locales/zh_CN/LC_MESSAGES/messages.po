@@ -1,0 +1,43 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_CN\n"
+
+msgid "Reset Permissions and Owner"
+msgstr "重置权限和所有者"
+
+msgid "Folder Path:"
+msgstr "文件夹路径："
+
+msgid "Browse"
+msgstr "浏览"
+
+msgid "Start"
+msgstr "开始"
+
+msgid "Log:"
+msgstr "日志："
+
+msgid "Please select a folder path."
+msgstr "请选择一个文件夹路径。"
+
+msgid "Error: The specified folder does not exist."
+msgstr "错误：指定的文件夹不存在。"
+
+msgid "Running command: {}"
+msgstr "正在运行命令：{}"
+
+msgid "Permissions and owner reset completed."
+msgstr "权限和所有者重置完成。"
+
+msgid "Error: {}"
+msgstr "错误：{}"
+
+msgid "Resetting permissions and owner for folder: \"{}\""
+msgstr "正在重置文件夹“{}”的权限和所有者"
+
+msgid "The specified folder does not exist after running icacls."
+msgstr "运行 icacls 后指定的文件夹不存在。"
+
+msgid "Language:"
+msgstr "语言："

@@ -1,0 +1,86 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - temp  # 当推送到 temp 分支时触发
+      - main  # 当推送到 main 分支时触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 运行器
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3  # 检出仓库代码
+
+    - name: Set up Python
+      uses: actions/setup-python@v4  # 设置 Python 环境
+      with:
+        python-version: '3.9'  # 使用 Python 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip  # 升级 pip
+        pip install pyinstaller  # 安装 PyInstaller
+
+    - name: Compile translations
+      run: |
+        sudo apt-get update  # 更新包列表
+        sudo apt-get install -y gettext  # 安装 gettext
+        python setup.py build  # 编译项目
+
+    - name: Get Version
+      id: get_version
+      run: echo "::set-output name=version::$(python version.py)"  # 读取版本号并设置为输出变量
+
+    - name: Increment Version
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      id: increment_version
+      run: |
+        version=$(python version.py)  # 获取当前版本号
+        major=$(echo $version | cut -d'.' -f1)  # 提取主版本号
+        minor=$(echo $version | cut -d'.' -f2)  # 提取次版本号
+        new_version="$major.$((minor + 1))"  # 计算新版本号
+        echo $new_version > version.txt  # 将新版本号写入 version.txt
+        git config --global user.name 'github-actions'  # 配置 Git 用户名
+        git config --global user.email 'github-actions@github.com'  # 配置 Git 用户邮箱
+        git add version.txt  # 添加 version.txt 到 Git 暂存区
+        git commit -m "版本递增至 $new_version"  # 提交更新的版本号
+        git push origin main  # 推送到 main 分支
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+
+    - name: Package with PyInstaller
+      run: |
+        pyinstaller --onefile --name WindowsFolderRestore_${{ steps.get_version.outputs.version }}  --icon=assets/icon.ico src/main.py  # 使用 PyInstaller 打包项目
+
+    - name: Upload Artifact
+      if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
+      uses: actions/upload-artifact@v3
+      with:
+        name: WindowsFolderRestore_test  # 设置上传的工件名称
+        path: dist/WindowsFolderRestore_${{ steps.get_version.outputs.version }}  # 设置上传的工件路径
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+      with:
+        tag_name: ${{ github.sha }}  # 使用提交 SHA 作为标签名称
+        release_name: Release ${{ github.sha }}  # 设置发布名称
+        draft: false  # 设置发布为非草稿
+        prerelease: false  # 设置发布为非预发布
+
+    - name: Upload Release Asset
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # 使用创建发布步骤的上传 URL
+        asset_path: dist/WindowsFolderRestore_${{ steps.get_version.outputs.version }}  # 设置上传的工件路径
+        asset_name: WindowsFolderRestore_${{ steps.get_version.outputs.version }}  # 设置上传的工件名称
+        asset_content_type: application/octet-stream  # 设置上传的工件内容类型
