@@ -67,31 +67,43 @@ jobs:
 
     - name: Download and Install Python in Wine (32-bit)
       run: |
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 xvfb-run --auto-servernum wineboot
+        sudo Xvfb :99 &  # 启动 Xvfb
+        export DISPLAY=:99  # 设置 DISPLAY 环境变量
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wineboot
         wget https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe -O /tmp/python-3.9.7.exe
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 xvfb-run --auto-servernum wine /tmp/python-3.9.7.exe /quiet InstallAllUsers=1 PrependPath=1
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine /tmp/python-3.9.7.exe /quiet InstallAllUsers=1 PrependPath=1
 
     - name: Download and Install Python in Wine (64-bit)
       run: |
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 xvfb-run --auto-servernum wineboot
+        sudo Xvfb :99 &  # 启动 Xvfb
+        export DISPLAY=:99  # 设置 DISPLAY 环境变量
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wineboot
         wget https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe -O /tmp/python-3.9.7-amd64.exe
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 xvfb-run --auto-servernum wine /tmp/python-3.9.7-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine /tmp/python-3.9.7-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
 
     - name: Install PyInstaller in Wine (32-bit)
       run: |
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 xvfb-run --auto-servernum wine python -m pip install pyinstaller
+        sudo Xvfb :99 &  # 启动 Xvfb
+        export DISPLAY=:99  # 设置 DISPLAY 环境变量
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine python -m pip install pyinstaller
 
     - name: Install PyInstaller in Wine (64-bit)
       run: |
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 xvfb-run --auto-servernum wine python -m pip install pyinstaller
+        sudo Xvfb :99 &  # 启动 Xvfb
+        export DISPLAY=:99  # 设置 DISPLAY 环境变量
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine python -m pip install pyinstaller
 
     - name: Package 32-bit with PyInstaller
       run: |
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 xvfb-run --auto-servernum wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 32 位项目
+        sudo Xvfb :99 &  # 启动 Xvfb
+        export DISPLAY=:99  # 设置 DISPLAY 环境变量
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 32 位项目
 
     - name: Package 64-bit with PyInstaller
       run: |
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 xvfb-run --auto-servernum wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 64 位项目
+        sudo Xvfb :99 &  # 启动 Xvfb
+        export DISPLAY=:99  # 设置 DISPLAY 环境变量
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 64 位项目
 
     - name: Debug after packaging
       run: |
