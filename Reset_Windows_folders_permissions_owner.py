@@ -22,6 +22,9 @@ def reset_permissions_and_owner():
             log_text.see(tk.END)
             return
 
+        # Replace forward slashes with backslashes
+        folder_path = folder_path.replace('/', '\\')
+        
         log_text.insert(tk.END, f'Resetting permissions and owner for folder: "{folder_path}"\n')
         log_text.see(tk.END)
 
@@ -42,6 +45,10 @@ def reset_permissions_and_owner():
                 log_text.see(tk.END)
                 if icacls_result.returncode != 0:
                     raise Exception(icacls_result.stderr.decode(locale.getpreferredencoding(), errors='ignore'))
+
+                # Check if the folder still exists before running takeown
+                if not os.path.exists(folder_path):
+                    raise Exception("The specified folder does not exist after running icacls.")
 
                 # Build the takeown command to reset ownership
                 takeown_command = f'takeown /F "{folder_path}" /R /A /D Y'
