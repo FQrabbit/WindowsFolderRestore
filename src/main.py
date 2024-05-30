@@ -38,6 +38,7 @@ def is_admin():
 
 def reset_permissions_and_owner():
     folder_path = folder_path_entry.get()
+    use_a_parameter = use_a_var.get()
     if folder_path:
         if not os.path.exists(folder_path):
             log_text.insert(tk.END, _("Error: The specified folder does not exist.\n"))
@@ -73,7 +74,10 @@ def reset_permissions_and_owner():
                     raise Exception(_("The specified folder does not exist after running icacls."))
 
                 # 构建takeown命令以重置所有权
-                takeown_command = f'takeown /F "{folder_path}" /R /A /D Y'
+                takeown_command = f'takeown /F "{folder_path}" /R'
+                if use_a_parameter:
+                    takeown_command += ' /A'
+                takeown_command += ' /D Y'
                 log_text.insert(tk.END, _("Running command: {}\n").format(takeown_command))
                 log_text.see(tk.END)
                 # 执行takeown命令
@@ -116,6 +120,7 @@ def refresh_gui_text():
     start_button.config(text=_("Start"))
     log_label.config(text=_("Log:"))
     language_label.config(text=_("Language:"))
+    use_a_checkbox.config(text=_("Transfer ownership to admin group"))
 
 if not is_admin():
     # 以管理员权限重新运行程序，并传递系统语言作为参数
@@ -152,20 +157,24 @@ folder_path_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
 browse_button = tk.Button(root, text=_("Browse"), command=browse_folder)
 browse_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
 
+use_a_var = tk.BooleanVar()
+use_a_checkbox = tk.Checkbutton(root, text=_("Transfer ownership to admin group"), variable=use_a_var)
+use_a_checkbox.grid(row=1, column=0, columnspan=3, padx=5, pady=5, sticky="w")
+
 start_button = tk.Button(root, text=_("Start"), command=reset_permissions_and_owner)
-start_button.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
+start_button.grid(row=2, column=0, columnspan=3, padx=5, pady=5)
 
 log_label = tk.Label(root, text=_("Log:"))
-log_label.grid(row=2, column=0, padx=5, pady=5, sticky="nw")
+log_label.grid(row=3, column=0, padx=5, pady=5, sticky="nw")
 
 log_text = ScrolledText(root, width=60, height=15)
-log_text.grid(row=3, column=0, columnspan=3, padx=5, pady=5)
+log_text.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
 
 language_label = tk.Label(root, text=_("Language:"))
-language_label.grid(row=4, column=0, padx=5, pady=5, sticky="e")
+language_label.grid(row=5, column=0, padx=5, pady=5, sticky="e")
 
 language_combobox = ttk.Combobox(root, values=['en', 'zh_CN', 'zh_TW'], state='readonly')
-language_combobox.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+language_combobox.grid(row=5, column=1, padx=5, pady=5, sticky="w")
 language_combobox.set(system_language)
 language_combobox.bind("<<ComboboxSelected>>", lambda event: change_language())
 
