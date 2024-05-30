@@ -8,31 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 运行器
+    runs-on: windows-latest  # 使用最新的 Windows 运行器
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4  # 检出仓库代码，更新到支持 Node.js 20 的版本
-
-    - name: Prepare APT cache directory
-      run: |
-        sudo mkdir -p /var/cache/apt/archives
-        sudo chmod -R 777 /var/cache/apt/archives
-
-    - name: Cache APT packages
-      id: cache-apt
-      uses: actions/cache@v4  # 更新到支持 Node.js 20 的版本
-      with:
-        path: /var/cache/apt
-        key: ${{ runner.os }}-apt-${{ hashFiles('**/setup.py') }}
-        restore-keys: |
-          ${{ runner.os }}-apt-
-
-    - name: Update apt-get and install dependencies
-      run: |
-        sudo dpkg --add-architecture i386  # 启用多架构支持
-        sudo apt-get update  # 更新包列表
-        sudo apt-get install -y wine32 wine64 gettext xvfb wget  # 安装 wine32、wine64、gettext、xvfb 和 wget
 
     - name: Set up Python
       uses: actions/setup-python@v5  # 设置 Python 环境，更新到支持 Node.js 20 的版本
@@ -65,67 +45,20 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
 
-    - name: Install Wine Gecko and Mono
-      run: |
-        wget https://dl.winehq.org/wine/wine-gecko/2.47.2/wine-gecko-2.47.2-x86.msi -O /tmp/wine-gecko-2.47.2-x86.msi
-        wget https://dl.winehq.org/wine/wine-gecko/2.47.2/wine-gecko-2.47.2-x86_64.msi -O /tmp/wine-gecko-2.47.2-x86_64.msi
-        wget https://dl.winehq.org/wine/wine-mono/7.2.0/wine-mono-7.2.0-x86.msi -O /tmp/wine-mono-7.2.0-x86.msi
-        sudo mkdir -p /usr/share/wine/gecko /usr/share/wine/mono
-        sudo cp /tmp/wine-gecko-2.47.2-x86.msi /usr/share/wine/gecko/
-        sudo cp /tmp/wine-gecko-2.47.2-x86_64.msi /usr/share/wine/gecko/
-        sudo cp /tmp/wine-mono-7.2.0-x86.msi /usr/share/wine/mono/
-
-    - name: Download and Install Python in Wine (32-bit)
-      run: |
-        sudo Xvfb :99 &  # 启动 Xvfb
-        export DISPLAY=:99  # 设置 DISPLAY 环境变量
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wineboot
-        wget https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe -O /tmp/python-3.9.7.exe
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine /tmp/python-3.9.7.exe /quiet InstallAllUsers=1 PrependPath=1
-
-    - name: Download and Install Python in Wine (64-bit)
-      run: |
-        sudo Xvfb :99 &  # 启动 Xvfb
-        export DISPLAY=:99  # 设置 DISPLAY 环境变量
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wineboot
-        wget https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe -O /tmp/python-3.9.7-amd64.exe
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine /tmp/python-3.9.7-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
-
-    - name: Install PyInstaller in Wine (32-bit)
-      run: |
-        sudo Xvfb :99 &  # 启动 Xvfb
-        export DISPLAY=:99  # 设置 DISPLAY 环境变量
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine python -m pip install pyinstaller
-
-    - name: Install PyInstaller in Wine (64-bit)
-      run: |
-        sudo Xvfb :99 &  # 启动 Xvfb
-        export DISPLAY=:99  # 设置 DISPLAY 环境变量
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine python -m pip install pyinstaller
-
     - name: Package 32-bit with PyInstaller
       run: |
-        sudo Xvfb :99 &  # 启动 Xvfb
-        export DISPLAY=:99  # 设置 DISPLAY 环境变量
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 32 位项目
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 PyInstaller 打包 32 位项目
+      env:
+        PATH: C:\Python39-32\Scripts;C:\Python39-32;${{ env.PATH }}  # 设置 Python 32 位环境的路径
 
     - name: Package 64-bit with PyInstaller
       run: |
-        sudo Xvfb :99 &  # 启动 Xvfb
-        export DISPLAY=:99  # 设置 DISPLAY 环境变量
-        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 64 位项目
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 PyInstaller 打包 64 位项目
 
     - name: Debug after packaging
       run: |
         echo "Packaging completed"
-        df -h  # 检查磁盘空间使用情况
-        free -m  # 检查内存使用情况
-
-    - name: Debug before uploading artifact
-      run: |
-        ls -l dist  # 列出 dist 目录中的文件
-        ls -l dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 列出 32 位打包文件的详细信息
-        ls -l dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 列出 64 位打包文件的详细信息
+        dir dist  # 列出 dist 目录中的文件
 
     - name: Upload Artifact (32-bit)
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
