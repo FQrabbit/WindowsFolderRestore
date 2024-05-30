@@ -47,13 +47,13 @@ jobs:
 
     - name: Package 32-bit with PyInstaller
       run: |
-        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 PyInstaller 打包 32 位项目
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico --add-data "locales;locales" src/main.py --noconfirm  # 使用 PyInstaller 打包 32 位项目
       env:
         PATH: C:\Python39-32\Scripts;C:\Python39-32;${{ env.PATH }}  # 设置 Python 32 位环境的路径
 
     - name: Package 64-bit with PyInstaller
       run: |
-        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 PyInstaller 打包 64 位项目
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico --add-data "locales;locales" src/main.py --noconfirm  # 使用 PyInstaller 打包 64 位项目
 
     - name: Debug after packaging
       run: |

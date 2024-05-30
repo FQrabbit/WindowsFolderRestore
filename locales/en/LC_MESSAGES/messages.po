@@ -2,8 +2,42 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: en\n"
+"Content-Transfer-Encoding: 8bit\n"
 
-msgid "Reset Permissions and Owner"
+msgid "Error: The specified folder does not exist.\n"
+msgstr ""
+
+msgid "Resetting permissions and ownership for folder \"{}\".\n"
+msgstr ""
+
+msgid "Running command: {}\n"
+msgstr ""
+
+msgid "icacls stdout: {}\n"
+msgstr ""
+
+msgid "icacls stderr: {}\n"
+msgstr ""
+
+msgid "The specified folder does not exist after running icacls."
+msgstr ""
+
+msgid "takeown stdout: {}\n"
+msgstr ""
+
+msgid "takeown stderr: {}\n"
+msgstr ""
+
+msgid "Permissions and ownership reset complete.\n"
+msgstr ""
+
+msgid "Error: {}\n"
+msgstr ""
+
+msgid "Please select a folder path.\n"
+msgstr ""
+
+msgid "Reset Permissions and Ownership"
 msgstr ""
 
 msgid "Folder Path:"
@@ -18,26 +52,8 @@ msgstr ""
 msgid "Log:"
 msgstr ""
 
-msgid "Please select a folder path."
-msgstr ""
-
-msgid "Error: The specified folder does not exist."
-msgstr ""
-
-msgid "Running command: {}"
-msgstr ""
-
-msgid "Permissions and owner reset completed."
-msgstr ""
-
-msgid "Error: {}"
-msgstr ""
-
-msgid "Resetting permissions and owner for folder: \"{}\""
-msgstr ""
-
-msgid "The specified folder does not exist after running icacls."
-msgstr ""
-
 msgid "Language:"
+msgstr ""
+
+msgid "Transfer ownership to admin group"
 msgstr ""
