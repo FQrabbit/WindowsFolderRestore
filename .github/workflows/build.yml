@@ -65,14 +65,24 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
 
-    - name: Install Python and PyInstaller in Wine (32-bit)
+    - name: Download and Install Python in Wine (32-bit)
       run: |
         WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wineboot
-        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine python -m pip install pyinstaller
+        wget https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe -O /tmp/python-3.9.7.exe
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine /tmp/python-3.9.7.exe /quiet InstallAllUsers=1 PrependPath=1
 
-    - name: Install Python and PyInstaller in Wine (64-bit)
+    - name: Download and Install Python in Wine (64-bit)
       run: |
         WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wineboot
+        wget https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe -O /tmp/python-3.9.7-amd64.exe
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine /tmp/python-3.9.7-amd64.exe /quiet InstallAllUsers=1 PrependPath=1
+
+    - name: Install PyInstaller in Wine (32-bit)
+      run: |
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine python -m pip install pyinstaller
+
+    - name: Install PyInstaller in Wine (64-bit)
+      run: |
         WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine python -m pip install pyinstaller
 
     - name: Package 32-bit with PyInstaller
