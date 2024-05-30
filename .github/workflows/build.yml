@@ -32,7 +32,7 @@ jobs:
       run: |
         sudo dpkg --add-architecture i386  # 启用多架构支持
         sudo apt-get update  # 更新包列表
-        sudo apt-get install -y wine32 wine64 gettext xvfb  # 安装 wine32、wine64、gettext 和 xvfb
+        sudo apt-get install -y wine32 wine64 gettext xvfb wget  # 安装 wine32、wine64、gettext、xvfb 和 wget
 
     - name: Set up Python
       uses: actions/setup-python@v5  # 设置 Python 环境，更新到支持 Node.js 20 的版本
@@ -64,6 +64,16 @@ jobs:
         git push origin main  # 推送到 main 分支
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+
+    - name: Install Wine Gecko and Mono
+      run: |
+        wget https://dl.winehq.org/wine/wine-gecko/2.47.2/wine-gecko-2.47.2-x86.msi -O /tmp/wine-gecko-2.47.2-x86.msi
+        wget https://dl.winehq.org/wine/wine-gecko/2.47.2/wine-gecko-2.47.2-x86_64.msi -O /tmp/wine-gecko-2.47.2-x86_64.msi
+        wget https://dl.winehq.org/wine/wine-mono/7.2.0/wine-mono-7.2.0-x86.msi -O /tmp/wine-mono-7.2.0-x86.msi
+        sudo mkdir -p /usr/share/wine/gecko /usr/share/wine/mono
+        sudo cp /tmp/wine-gecko-2.47.2-x86.msi /usr/share/wine/gecko/
+        sudo cp /tmp/wine-gecko-2.47.2-x86_64.msi /usr/share/wine/gecko/
+        sudo cp /tmp/wine-mono-7.2.0-x86.msi /usr/share/wine/mono/
 
     - name: Download and Install Python in Wine (32-bit)
       run: |
