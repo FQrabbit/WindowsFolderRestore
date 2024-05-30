@@ -22,6 +22,9 @@ def reset_permissions_and_owner():
             log_text.see(tk.END)
             return
 
+        # Replace forward slashes with backslashes
+        folder_path = folder_path.replace('/', '\\')
+        
         log_text.insert(tk.END, f'Resetting permissions and owner for folder: "{folder_path}"\n')
         log_text.see(tk.END)
 
@@ -30,18 +33,6 @@ def reset_permissions_and_owner():
                 # Set the code page to UTF-8
                 chcp_command = ['chcp', '65001']
                 subprocess.run(chcp_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-                # Build the takeown command to reset ownership
-                takeown_command = f'takeown /F "{folder_path}" /R /A /D Y'
-                log_text.insert(tk.END, f"Running command: {takeown_command}\n")
-                log_text.see(tk.END)
-                # Execute the takeown command
-                takeown_result = subprocess.run(takeown_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                log_text.insert(tk.END, f"takeown stdout: {takeown_result.stdout.decode(locale.getpreferredencoding(), errors='ignore')}\n")
-                log_text.insert(tk.END, f"takeown stderr: {takeown_result.stderr.decode(locale.getpreferredencoding(), errors='ignore')}\n")
-                log_text.see(tk.END)
-                if takeown_result.returncode != 0:
-                    raise Exception(takeown_result.stderr.decode(locale.getpreferredencoding(), errors='ignore'))
 
                 # Build the icacls command to reset permissions
                 icacls_command = f'icacls "{folder_path}" /reset /t /c'
@@ -54,6 +45,22 @@ def reset_permissions_and_owner():
                 log_text.see(tk.END)
                 if icacls_result.returncode != 0:
                     raise Exception(icacls_result.stderr.decode(locale.getpreferredencoding(), errors='ignore'))
+
+                # Check if the folder still exists before running takeown
+                if not os.path.exists(folder_path):
+                    raise Exception("The specified folder does not exist after running icacls.")
+
+                # Build the takeown command to reset ownership
+                takeown_command = f'takeown /F "{folder_path}" /R /A /D Y'
+                log_text.insert(tk.END, f"Running command: {takeown_command}\n")
+                log_text.see(tk.END)
+                # Execute the takeown command
+                takeown_result = subprocess.run(takeown_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                log_text.insert(tk.END, f"takeown stdout: {takeown_result.stdout.decode(locale.getpreferredencoding(), errors='ignore')}\n")
+                log_text.insert(tk.END, f"takeown stderr: {takeown_result.stderr.decode(locale.getpreferredencoding(), errors='ignore')}\n")
+                log_text.see(tk.END)
+                if takeown_result.returncode != 0:
+                    raise Exception(takeown_result.stderr.decode(locale.getpreferredencoding(), errors='ignore'))
 
                 log_text.insert(tk.END, "Permissions and owner reset completed.\n")
             except Exception as e:
