@@ -14,6 +14,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4  # 检出仓库代码，更新到支持 Node.js 20 的版本
 
+    - name: Prepare APT cache directory
+      run: |
+        sudo mkdir -p /var/cache/apt/archives
+        sudo chmod -R 777 /var/cache/apt/archives
+
     - name: Cache APT packages
       id: cache-apt
       uses: actions/cache@v4  # 更新到支持 Node.js 20 的版本
@@ -22,10 +27,6 @@ jobs:
         key: ${{ runner.os }}-apt-${{ hashFiles('**/setup.py') }}
         restore-keys: |
           ${{ runner.os }}-apt-
-      continue-on-error: true  # 继续执行，即使缓存步骤失败
-      run: |
-        sudo mkdir -p /var/cache/apt/archives
-        sudo chmod -R 777 /var/cache/apt/archives
 
     - name: Update apt-get and install gettext
       run: |
