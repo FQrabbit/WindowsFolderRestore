@@ -30,8 +30,9 @@ jobs:
 
     - name: Update apt-get and install dependencies
       run: |
+        sudo dpkg --add-architecture i386  # 启用多架构支持
         sudo apt-get update  # 更新包列表
-        sudo apt-get install -y wine gettext  # 安装 wine 和 gettext
+        sudo apt-get install -y wine32 wine64 gettext  # 安装 wine32、wine64 和 gettext
 
     - name: Set up Python
       uses: actions/setup-python@v5  # 设置 Python 环境，更新到支持 Node.js 20 的版本
@@ -42,12 +43,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip  # 升级 pip
         pip install pyinstaller  # 安装 PyInstaller
-
-    - name: Debug after dependencies installation
-      run: |
-        echo "Dependencies installed successfully"
-        df -h  # 检查磁盘空间使用情况
-        free -m  # 检查内存使用情况
 
     - name: Get Version
       id: get_version
@@ -70,9 +65,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
 
-    - name: Package with PyInstaller
+    - name: Package 32-bit with PyInstaller
       run: |
-        wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }} --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包项目
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 32 位项目
+
+    - name: Package 64-bit with PyInstaller
+      run: |
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 64 位项目
 
     - name: Debug after packaging
       run: |
@@ -83,14 +82,22 @@ jobs:
     - name: Debug before uploading artifact
       run: |
         ls -l dist  # 列出 dist 目录中的文件
-        ls -l dist/WindowsFolderRestore_${{ env.VERSION }}  # 列出打包文件的详细信息
+        ls -l dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 列出 32 位打包文件的详细信息
+        ls -l dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 列出 64 位打包文件的详细信息
 
     - name: Upload Artifact
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
       uses: actions/upload-artifact@v4  # 更新到 v4 版本
       with:
-        name: WindowsFolderRestore_test  # 设置上传的工件名称
-        path: dist/WindowsFolderRestore_${{ env.VERSION }}.exe  # 设置上传的工件路径
+        name: WindowsFolderRestore_test_x86  # 设置上传的 32 位工件名称
+        path: dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件路径
+
+    - name: Upload Artifact
+      if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
+      uses: actions/upload-artifact@v4  # 更新到 v4 版本
+      with:
+        name: WindowsFolderRestore_test_x64  # 设置上传的 64 位工件名称
+        path: dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 设置上传的 64 位工件路径
 
     - name: Create Release
       if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
@@ -104,13 +111,24 @@ jobs:
         draft: false  # 设置发布为非草稿
         prerelease: false  # 设置发布为非预发布
 
-    - name: Upload Release Asset
+    - name: Upload Release Asset (32-bit)
       if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}  # 使用创建发布步骤的上传 URL
-        asset_path: dist/WindowsFolderRestore_${{ env.VERSION }}.exe  # 设置上传的工件路径
-        asset_name: WindowsFolderRestore_${{ env.VERSION }}.exe  # 设置上传的工件名称
+        asset_path: dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件路径
+        asset_name: WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件名称
+        asset_content_type: application/octet-stream  # 设置上传的工件内容类型
+
+    - name: Upload Release Asset (64-bit)
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # 使用创建发布步骤的上传 URL
+        asset_path: dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 设置上传的 64 位工件路径
+        asset_name: WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 设置上传的 64 位工件名称
         asset_content_type: application/octet-stream  # 设置上传的工件内容类型
