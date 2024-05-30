@@ -75,6 +75,11 @@ jobs:
         df -h  # 检查磁盘空间使用情况
         free -m  # 检查内存使用情况
 
+    - name: Debug before uploading artifact
+      run: |
+        ls -l dist  # 列出 dist 目录中的文件
+        ls -l dist/WindowsFolderRestore_${{ env.VERSION }}  # 列出打包文件的详细信息
+
     - name: Upload Artifact
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
       uses: actions/upload-artifact@v4  # 更新到 v4 版本
