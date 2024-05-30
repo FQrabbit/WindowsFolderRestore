@@ -65,6 +65,16 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
 
+    - name: Install Python and PyInstaller in Wine (32-bit)
+      run: |
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wineboot
+        WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine python -m pip install pyinstaller
+
+    - name: Install Python and PyInstaller in Wine (64-bit)
+      run: |
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wineboot
+        WINEPREFIX=/home/runner/.wine64 WINEARCH=win64 wine python -m pip install pyinstaller
+
     - name: Package 32-bit with PyInstaller
       run: |
         WINEPREFIX=/home/runner/.wine32 WINEARCH=win32 wine pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico src/main.py --noconfirm  # 使用 wine 和 PyInstaller 打包 32 位项目
@@ -85,14 +95,14 @@ jobs:
         ls -l dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 列出 32 位打包文件的详细信息
         ls -l dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 列出 64 位打包文件的详细信息
 
-    - name: Upload Artifact
+    - name: Upload Artifact (32-bit)
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
       uses: actions/upload-artifact@v4  # 更新到 v4 版本
       with:
         name: WindowsFolderRestore_test_x86  # 设置上传的 32 位工件名称
         path: dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件路径
 
-    - name: Upload Artifact
+    - name: Upload Artifact (64-bit)
       if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
       uses: actions/upload-artifact@v4  # 更新到 v4 版本
       with:
