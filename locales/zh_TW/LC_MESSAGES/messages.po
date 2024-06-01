@@ -1,0 +1,59 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_TW\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Error: The specified folder does not exist.\n"
+msgstr "錯誤：指定的資料夾不存在。\n"
+
+msgid "Resetting permissions and ownership for folder \"{}\".\n"
+msgstr "正在重置資料夾「{}」的權限和所有權。\n"
+
+msgid "Running command: {}\n"
+msgstr "執行命令：{}\n"
+
+msgid "icacls stdout: {}\n"
+msgstr "icacls 標準輸出：{}\n"
+
+msgid "icacls stderr: {}\n"
+msgstr "icacls 錯誤輸出：{}\n"
+
+msgid "The specified folder does not exist after running icacls."
+msgstr "執行 icacls 後，指定的資料夾不存在。"
+
+msgid "takeown stdout: {}\n"
+msgstr "takeown 標準輸出：{}\n"
+
+msgid "takeown stderr: {}\n"
+msgstr "takeown 錯誤輸出：{}\n"
+
+msgid "Permissions and ownership reset complete.\n"
+msgstr "權限和所有權重置完成。\n"
+
+msgid "Error: {}\n"
+msgstr "錯誤：{}\n"
+
+msgid "Please select a folder path.\n"
+msgstr "請選擇資料夾路徑。\n"
+
+msgid "Reset Permissions and Ownership"
+msgstr "重置權限和所有權"
+
+msgid "Folder Path:"
+msgstr "資料夾路徑："
+
+msgid "Browse"
+msgstr "瀏覽"
+
+msgid "Start"
+msgstr "開始"
+
+msgid "Log:"
+msgstr "日誌："
+
+msgid "Language:"
+msgstr "語言："
+
+msgid "Transfer ownership to admin group"
+msgstr "將所有權轉移給管理員組"

@@ -1,0 +1,109 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - temp  # 当推送到 temp 分支时触发
+      - main  # 当推送到 main 分支时触发
+
+jobs:
+  build:
+    runs-on: windows-latest  # 使用最新的 Windows 运行器
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4  # 检出仓库代码，更新到支持 Node.js 20 的版本
+
+    - name: Set up Python
+      uses: actions/setup-python@v5  # 设置 Python 环境，更新到支持 Node.js 20 的版本
+      with:
+        python-version: '3.9'  # 使用 Python 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip  # 升级 pip
+        pip install pyinstaller  # 安装 PyInstaller
+
+    - name: Get Version
+      id: get_version
+      run: echo "VERSION=$(python version.py)" >> $GITHUB_ENV  # 读取版本号并设置为环境变量
+
+    - name: Increment Version
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      id: increment_version
+      run: |
+        version=$(python version.py)  # 获取当前版本号
+        major=$(echo $version | cut -d'.' -f1)  # 提取主版本号
+        minor=$(echo $version | cut -d'.' -f2)  # 提取次版本号
+        new_version="$major.$((minor + 1))"  # 计算新版本号
+        echo $new_version > version.txt  # 将新版本号写入 version.txt
+        git config --global user.name 'github-actions'  # 配置 Git 用户名
+        git config --global user.email 'github-actions@github.com'  # 配置 Git 用户邮箱
+        git add version.txt  # 添加 version.txt 到 Git 暂存区
+        git commit -m "版本递增至 $new_version"  # 提交更新的版本号
+        git push origin main  # 推送到 main 分支
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+
+    - name: Package 32-bit with PyInstaller
+      run: |
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x86 --icon=assets/icon.ico --add-data "locales;locales" src/main.py --noconfirm  # 使用 PyInstaller 打包 32 位项目
+      env:
+        PATH: C:\Python39-32\Scripts;C:\Python39-32;${{ env.PATH }}  # 设置 Python 32 位环境的路径
+
+    - name: Package 64-bit with PyInstaller
+      run: |
+        pyinstaller --onefile --name WindowsFolderRestore_${{ env.VERSION }}_x64 --icon=assets/icon.ico --add-data "locales;locales" src/main.py --noconfirm  # 使用 PyInstaller 打包 64 位项目
+
+    - name: Debug after packaging
+      run: |
+        echo "Packaging completed"
+        dir dist  # 列出 dist 目录中的文件
+
+    - name: Upload Artifact (32-bit)
+      if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
+      uses: actions/upload-artifact@v4  # 更新到 v4 版本
+      with:
+        name: WindowsFolderRestore_test_x86  # 设置上传的 32 位工件名称
+        path: dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件路径
+
+    - name: Upload Artifact (64-bit)
+      if: github.ref == 'refs/heads/temp'  # 仅在推送到 temp 分支时执行
+      uses: actions/upload-artifact@v4  # 更新到 v4 版本
+      with:
+        name: WindowsFolderRestore_test_x64  # 设置上传的 64 位工件名称
+        path: dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 设置上传的 64 位工件路径
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+      with:
+        tag_name: ${{ github.sha }}  # 使用提交 SHA 作为标签名称
+        release_name: Release ${{ github.sha }}  # 设置发布名称
+        draft: false  # 设置发布为非草稿
+        prerelease: false  # 设置发布为非预发布
+
+    - name: Upload Release Asset (32-bit)
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # 使用创建发布步骤的上传 URL
+        asset_path: dist/WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件路径
+        asset_name: WindowsFolderRestore_${{ env.VERSION }}_x86.exe  # 设置上传的 32 位工件名称
+        asset_content_type: application/octet-stream  # 设置上传的工件内容类型
+
+    - name: Upload Release Asset (64-bit)
+      if: github.ref == 'refs/heads/main'  # 仅在推送到 main 分支时执行
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 进行身份验证
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # 使用创建发布步骤的上传 URL
+        asset_path: dist/WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 设置上传的 64 位工件路径
+        asset_name: WindowsFolderRestore_${{ env.VERSION }}_x64.exe  # 设置上传的 64 位工件名称
+        asset_content_type: application/octet-stream  # 设置上传的工件内容类型
